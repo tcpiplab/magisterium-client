@@ -47,18 +47,23 @@ def create_headers(user_agent: str = "magisterium-client/1.0") -> Dict[str, str]
     }
 
 
-def create_chat_request(message: str, model: str = "magisterium-1") -> Dict[str, Any]:
+def create_chat_request(
+    message: str, 
+    model: str = "magisterium-1", 
+    return_related_questions: bool = False
+) -> Dict[str, Any]:
     """
     Create a chat completion request payload.
     
     Args:
         message: The user message to send
         model: The model to use for completion
+        return_related_questions: Whether to request related questions in response
         
     Returns:
         Dict containing the request payload
     """
-    return {
+    request_data = {
         "model": model,
         "messages": [
             {
@@ -68,6 +73,11 @@ def create_chat_request(message: str, model: str = "magisterium-1") -> Dict[str,
         ],
         "stream": False
     }
+    
+    if return_related_questions:
+        request_data["return_related_questions"] = True
+    
+    return request_data
 
 
 def make_chat_request(
@@ -76,7 +86,9 @@ def make_chat_request(
     user_agent: str = "magisterium-client/1.0",
     verify_ssl: bool = True,
     proxies: Optional[Dict[str, str]] = None,
-    timeout: int = 30
+    timeout: int = 30,
+    model: str = "magisterium-1",
+    return_related_questions: bool = False
 ) -> Dict[str, Any]:
     """
     Make a chat completion request to the Magisterium API.
@@ -88,6 +100,8 @@ def make_chat_request(
         verify_ssl: Whether to verify SSL certificates
         proxies: Optional proxy configuration
         timeout: Request timeout in seconds
+        model: The model to use for completion
+        return_related_questions: Whether to request related questions in response
         
     Returns:
         Dict containing the API response
@@ -97,7 +111,7 @@ def make_chat_request(
         ValueError: If the response format is invalid
     """
     headers = create_headers(user_agent)
-    data = create_chat_request(message)
+    data = create_chat_request(message, model, return_related_questions)
     
     try:
         response = requests.post(
@@ -186,6 +200,12 @@ def parse_arguments() -> argparse.Namespace:
         help="Request timeout in seconds (default: 30)"
     )
     
+    parser.add_argument(
+        "--related-questions",
+        action="store_true",
+        help="Request related questions in the response"
+    )
+    
     return parser.parse_args()
 
 
@@ -214,12 +234,20 @@ def main() -> None:
             user_agent=args.user_agent,
             verify_ssl=not args.insecure,
             proxies=proxies,
-            timeout=args.timeout
+            timeout=args.timeout,
+            model=args.model,
+            return_related_questions=args.related_questions
         )
         
         # Extract and print the response message
         message = response["choices"][0]["message"]
         print(json.dumps(message, indent=2))
+        
+        # Print related questions if they exist
+        if "related_questions" in response and response["related_questions"]:
+            print("\n--- Related Questions ---")
+            for i, question in enumerate(response["related_questions"], 1):
+                print(f"{i}. {question}")
         
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
