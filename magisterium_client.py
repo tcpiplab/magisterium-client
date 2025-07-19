@@ -47,10 +47,40 @@ def create_headers(user_agent: str = "magisterium-client/1.0") -> Dict[str, str]
     }
 
 
+def create_safety_settings(
+    non_catholic_threshold: str = "BLOCK_ALL",
+    non_catholic_response: bool = True
+) -> Dict[str, Any]:
+    """
+    Create safety settings configuration.
+    
+    Args:
+        non_catholic_threshold: Threshold for non-Catholic content (BLOCK_ALL or OFF)
+        non_catholic_response: Whether to provide fallback response when blocked
+        
+    Returns:
+        Dict containing safety settings
+        
+    Raises:
+        ValueError: If threshold value is invalid
+    """
+    valid_thresholds = ["BLOCK_ALL", "OFF"]
+    if non_catholic_threshold not in valid_thresholds:
+        raise ValueError(f"Invalid threshold '{non_catholic_threshold}'. Must be one of: {valid_thresholds}")
+    
+    return {
+        "CATEGORY_NON_CATHOLIC": {
+            "threshold": non_catholic_threshold,
+            "response": non_catholic_response
+        }
+    }
+
+
 def create_chat_request(
     message: str, 
     model: str = "magisterium-1", 
-    return_related_questions: bool = False
+    return_related_questions: bool = False,
+    safety_settings: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Create a chat completion request payload.
@@ -59,6 +89,7 @@ def create_chat_request(
         message: The user message to send
         model: The model to use for completion
         return_related_questions: Whether to request related questions in response
+        safety_settings: Optional safety settings configuration
         
     Returns:
         Dict containing the request payload
@@ -77,6 +108,9 @@ def create_chat_request(
     if return_related_questions:
         request_data["return_related_questions"] = True
     
+    if safety_settings:
+        request_data["safety_settings"] = safety_settings
+    
     return request_data
 
 
@@ -88,7 +122,8 @@ def make_chat_request(
     proxies: Optional[Dict[str, str]] = None,
     timeout: int = 30,
     model: str = "magisterium-1",
-    return_related_questions: bool = False
+    return_related_questions: bool = False,
+    safety_settings: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Make a chat completion request to the Magisterium API.
@@ -102,6 +137,7 @@ def make_chat_request(
         timeout: Request timeout in seconds
         model: The model to use for completion
         return_related_questions: Whether to request related questions in response
+        safety_settings: Optional safety settings configuration
         
     Returns:
         Dict containing the API response
@@ -111,7 +147,7 @@ def make_chat_request(
         ValueError: If the response format is invalid
     """
     headers = create_headers(user_agent)
-    data = create_chat_request(message, model, return_related_questions)
+    data = create_chat_request(message, model, return_related_questions, safety_settings)
     
     try:
         response = requests.post(
@@ -206,6 +242,19 @@ def parse_arguments() -> argparse.Namespace:
         help="Request related questions in the response"
     )
     
+    parser.add_argument(
+        "--non-catholic-threshold",
+        choices=["BLOCK_ALL", "OFF"],
+        default="BLOCK_ALL",
+        help="Threshold for non-Catholic content filtering (default: BLOCK_ALL)"
+    )
+    
+    parser.add_argument(
+        "--no-fallback-response",
+        action="store_true",
+        help="Disable fallback response when content is blocked (default: enabled)"
+    )
+    
     return parser.parse_args()
 
 
@@ -228,6 +277,18 @@ def main() -> None:
         }
     
     try:
+        # Configure safety settings
+        safety_settings = None
+        if args.non_catholic_threshold != "BLOCK_ALL" or args.no_fallback_response:
+            try:
+                safety_settings = create_safety_settings(
+                    non_catholic_threshold=args.non_catholic_threshold,
+                    non_catholic_response=not args.no_fallback_response
+                )
+            except ValueError as e:
+                print(f"Error: {e}", file=sys.stderr)
+                sys.exit(1)
+        
         response = make_chat_request(
             message=args.message,
             url=args.url,
@@ -236,7 +297,8 @@ def main() -> None:
             proxies=proxies,
             timeout=args.timeout,
             model=args.model,
-            return_related_questions=args.related_questions
+            return_related_questions=args.related_questions,
+            safety_settings=safety_settings
         )
         
         # Extract and print the response message
