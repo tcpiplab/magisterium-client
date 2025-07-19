@@ -10,6 +10,15 @@ from typing import Dict, Optional, Any
 import requests
 
 
+class MagisteriumAPIError(requests.RequestException):
+    """Custom exception for Magisterium API errors with detailed error information."""
+    
+    def __init__(self, message: str, status_code: Optional[int] = None, error_code: Optional[str] = None):
+        super().__init__(message)
+        self.status_code = status_code
+        self.error_code = error_code
+
+
 def get_api_key() -> str:
     """
     Retrieve the Magisterium API key from environment variables.
@@ -74,6 +83,55 @@ def create_safety_settings(
             "response": non_catholic_response
         }
     }
+
+
+def parse_api_error(response: requests.Response) -> str:
+    """
+    Parse API error response and return a user-friendly error message.
+    
+    Args:
+        response: The HTTP response object from requests
+        
+    Returns:
+        str: A user-friendly error message
+    """
+    status_code = response.status_code
+    
+    # Try to parse JSON error response
+    try:
+        error_data = response.json()
+        error_message = error_data.get('message', 'Unknown error')
+    except (json.JSONDecodeError, ValueError):
+        error_message = response.text or f"HTTP {status_code} error"
+    
+    # Map specific error codes to helpful messages
+    if status_code == 400:
+        if "token limit exceeded" in error_message.lower():
+            return "Token limit exceeded. Your request is too long. Please shorten your message and try again."
+        return f"Bad request: {error_message}"
+    
+    elif status_code == 401:
+        if "incorrect api key" in error_message.lower():
+            return "Incorrect API key provided. Please check your MAGISTERIUM_API_KEY environment variable."
+        elif "invalid billing" in error_message.lower():
+            return "Invalid billing setup. Please check your billing configuration in your account dashboard."
+        elif "tier not found" in error_message.lower():
+            return "Invalid service tier. Please contact Magisterium support for assistance."
+        return f"Authentication error: {error_message}. Please check your API key."
+    
+    elif status_code == 429:
+        return "Rate limit exceeded. You are making too many requests. Please wait and try again, or upgrade your plan."
+    
+    elif status_code == 500:
+        return "Internal server error. This is an issue on Magisterium's end. Please try again later or contact support."
+    
+    elif status_code >= 500:
+        return f"Server error ({status_code}): {error_message}. Please try again later."
+    
+    elif status_code >= 400:
+        return f"Client error ({status_code}): {error_message}"
+    
+    return f"HTTP {status_code}: {error_message}"
 
 
 def create_chat_request(
@@ -172,13 +230,14 @@ def make_chat_request(
         return response_data
         
     except requests.exceptions.Timeout:
-        raise requests.RequestException(f"Request timed out after {timeout} seconds")
+        raise MagisteriumAPIError(f"Request timed out after {timeout} seconds. Please try again or increase the timeout value.")
     except requests.exceptions.ConnectionError:
-        raise requests.RequestException("Failed to connect to API endpoint")
+        raise MagisteriumAPIError("Failed to connect to API endpoint. Please check your internet connection and the API URL.")
     except requests.exceptions.HTTPError as e:
-        raise requests.RequestException(f"HTTP error: {e}")
+        error_message = parse_api_error(e.response)
+        raise MagisteriumAPIError(error_message, status_code=e.response.status_code)
     except json.JSONDecodeError:
-        raise ValueError("Invalid JSON response from API")
+        raise ValueError("Received invalid JSON response from API. The service may be temporarily unavailable.")
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -313,6 +372,9 @@ def main() -> None:
         
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except MagisteriumAPIError as e:
+        print(f"API Error: {e}", file=sys.stderr)
         sys.exit(1)
     except requests.RequestException as e:
         print(f"Request failed: {e}", file=sys.stderr)
