@@ -19,9 +19,35 @@ A Python command-line client for the Magisterium API, a Catholic AI assistant se
 - Python 3.7 or higher
 - An active Magisterium API key
 
-### Setup
+### Option 1: System-wide Installation (Recommended)
 
-1. **Clone or download the repository:**
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd Magisterium_Client
+   ```
+
+2. **Install the package:**
+   ```bash
+   pip install .
+   ```
+
+3. **Set up your API key:**
+   ```bash
+   export MAGISTERIUM_API_KEY="your_api_key_here"
+   # On Windows: set MAGISTERIUM_API_KEY=your_api_key_here
+   ```
+
+4. **Run from anywhere:**
+   ```bash
+   magisterium-client "What is the Trinity?"
+   ```
+
+### Option 2: Development Installation
+
+For development or if you prefer not to install system-wide:
+
+1. **Clone the repository:**
    ```bash
    git clone <repository-url>
    cd Magisterium_Client
@@ -33,9 +59,14 @@ A Python command-line client for the Magisterium API, a Catholic AI assistant se
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. **Install dependencies:**
+3. **Install in development mode:**
    ```bash
-   pip install requests
+   pip install -e .
+   ```
+   
+   Or install dependencies only:
+   ```bash
+   pip install -r requirements.txt
    ```
 
 4. **Set up your API key:**
@@ -44,9 +75,13 @@ A Python command-line client for the Magisterium API, a Catholic AI assistant se
    # On Windows: set MAGISTERIUM_API_KEY=your_api_key_here
    ```
 
-5. **Make the script executable (optional):**
+5. **Run locally:**
    ```bash
-   chmod +x magisterium_client.py
+   # If installed in development mode:
+   magisterium-client "What is the Trinity?"
+   
+   # Or run directly:
+   python3 magisterium_client.py "What is the Trinity?"
    ```
 
 ## Quick Start
@@ -54,25 +89,36 @@ A Python command-line client for the Magisterium API, a Catholic AI assistant se
 ### Basic Usage
 
 ```bash
-# Ask a simple question
+# If installed system-wide (recommended):
+magisterium-client "What is the Trinity?"
+
+# Or use default question:
+magisterium-client
+
+# If running locally:
 python3 magisterium_client.py "What is the Trinity?"
-
-# Or use default question
-python3 magisterium_client.py
-
-# If executable, you can run directly
-./magisterium_client.py "What is the Magisterium?"
 ```
 
 ### With Related Questions
 
 ```bash
+# System-wide installation:
+magisterium-client "What is prayer?" --related-questions
+
+# Local installation:
 python3 magisterium_client.py "What is prayer?" --related-questions
 ```
 
 ### Custom Settings
 
 ```bash
+# System-wide installation:
+magisterium-client "Tell me about the Saints" \
+    --related-questions \
+    --non-catholic-threshold OFF \
+    --timeout 60
+
+# Local installation:
 python3 magisterium_client.py "Tell me about the Saints" \
     --related-questions \
     --non-catholic-threshold OFF \

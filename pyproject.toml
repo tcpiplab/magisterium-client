@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "magisterium-client"
+version = "1.0.0"
+description = "Python command-line client for Magisterium AI chat completions and API testing"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "tcpiplab"}
+]
+maintainers = [
+    {name = "tcpiplab"}
+]
+keywords = ["magisterium", "api", "client", "catholic", "ai", "cli"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+    "Topic :: Religion"
+]
+requires-python = ">=3.7"
+dependencies = [
+    "requests>=2.25.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/tcpiplab/magisterium-client"
+Repository = "https://github.com/tcpiplab/magisterium-client"
+Issues = "https://github.com/tcpiplab/magisterium-client/issues"
+Documentation = "https://github.com/tcpiplab/magisterium-client#readme"
+
+[project.scripts]
+magisterium-client = "magisterium_client:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "semgrep"
+]
+
+[tool.setuptools]
+py-modules = ["magisterium_client"]
+
+[tool.setuptools.packages.find]
+exclude = ["tests*", "docs*"]

@@ -1,0 +1,6 @@
+# Magisterium Client Dependencies
+# 
+# Install with: pip install -r requirements.txt
+
+# HTTP client library for API requests
+requests>=2.25.0
