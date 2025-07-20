@@ -347,5 +347,4 @@ This project follows the security and coding practices outlined in the project d
 - This API client is designed to work with the Magisterium API service. But the developer of this client is not 
   affiliated with Magisterium.
 - For issues with this client, check the error messages and troubleshooting section above or open an issue on the project's GitHub repository.
-- For issues with the Magisterium API service, consult their [API documentation](https://www.magisterium.
-com/developers) or contact [Magisterium support](https://www.magisterium.com/about/contact).
+- For issues with the Magisterium API service, consult their [API documentation](https://www.magisterium.com/developers) or contact [Magisterium support](https://www.magisterium.com/about/contact).
