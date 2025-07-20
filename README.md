@@ -1,6 +1,6 @@
 # Magisterium Client
 
-A Python command-line client for the Magisterium API, a Catholic AI assistant service. This client provides a simple and secure way to interact with Magisterium's chat completion endpoints, featuring comprehensive error handling, safety settings, and security options.
+A Python command-line client for the Magisterium API, a Catholic AI assistant service. This client provides a simple and secure way to interact with Magisterium's chat completion endpoints, featuring comprehensive error handling, safety settings, and security options. The developer of this client is not affiliated with Magisterium.
 
 ## Features
 
