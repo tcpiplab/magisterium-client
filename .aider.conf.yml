@@ -7,6 +7,6 @@ openai-api-base: http://localhost:11434
 dark-mode: true
 code-theme: solarized-dark
 
-# Keep everything local - no cloud models
+# Keep everything local 
 stream: true
 pretty: true
