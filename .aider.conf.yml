@@ -1,6 +1,6 @@
 # AIDER configuration file
 # Use local Ollama instance with deepseek-coder model
-model: ollama/deepseek-coder:6.7b
+model: olla_chat/deepseek-coder:6.7b
 openai-api-base: http://localhost:11434
 
 # Use solarized dark theme for code blocks
