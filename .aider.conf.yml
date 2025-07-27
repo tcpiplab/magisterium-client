@@ -1,4 +1,4 @@
-# Aider configuration file
+# AIDER configuration file
 # Use local Ollama instance with deepseek-coder model
 model: ollama/deepseek-coder:6.7b
 openai-api-base: http://localhost:11434
