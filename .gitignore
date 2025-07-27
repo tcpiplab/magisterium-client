@@ -7,4 +7,6 @@
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/inspectionProfiles/Project_Default.xml
 /.idea/vcs.xml
-.aider*
+.aider.input.history
+.aider.chat.history.md
+.aider.tags
